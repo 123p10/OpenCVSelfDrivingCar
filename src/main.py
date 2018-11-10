@@ -5,7 +5,7 @@ from LaneDetector import LaneDetector
 
 def main():
     laneDetector = LaneDetector()
-    cap = cv2.VideoCapture('..\\resources\\stockcar\\trimmed.mp4')
+    cap = cv2.VideoCapture('..\\resources\\stockcar\\cardriving_Trim.mp4')
     #fgbg = cv2.createBackgroundSubtractorMOG2()
     while(1):
         ret, frame = cap.read()
