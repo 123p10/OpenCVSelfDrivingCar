@@ -2,65 +2,65 @@ import cv2
 import numpy as np
 import glob
 import pickle
+import math
+
 class LaneDetector:
 
     def __init__(self):
-        self.calculateChessboard()
+        return
 
-    #main function that analyzes and find the lanes
     def processLanes(self, img):
-        flattenedImage = self.flattenImage(img)
-        warpedImage = self.perspective_warp(flattenedImage)
-        return warpedImage
+        region_of_interest_vertices = [
+            (-200, 720),
+            (1280/2, 720/2),
+            (1280+200, 720),
+        ]
+        sizedImage = cv2.resize(img,(1280,720))
+        greyScaledImage = cv2.cvtColor(sizedImage,cv2.COLOR_BGR2GRAY)
+        gaussianBlur = cv2.GaussianBlur(greyScaledImage,(5,5),0)
+        cannyedImage = self.cannyImage(gaussianBlur,25,100)
+        croppedImage = self.cropImage(cannyedImage,np.array([region_of_interest_vertices],np.int32),)
+
+        lines = cv2.HoughLinesP(
+            croppedImage,
+            rho=6,
+            theta=np.pi / 60,
+            threshold=160,
+            lines=np.array([]),
+            minLineLength=40,
+            maxLineGap=25
+        )
+
+        output = self.draw_lines(sizedImage,lines)
+        return output
+
+    def cannyImage(self,img,min,max):
+        return cv2.Canny(img,min,max)
+
+    def cropImage(self, img, vertices):
+        mask = np.zeros_like(img)
+        channel_count = 1
+        match_mask_color = (255,) * channel_count
+        cv2.fillPoly(mask, np.int32(vertices), match_mask_color)
+        masked_image = cv2.bitwise_and(img, mask)
+        return masked_image
 
 
+    def draw_lines(self,img, lines, color=[255, 0, 0], thickness=3):
 
-
-    def perspective_warp(self,
-                     img, inv = False
-                     dst_size=(640,360),
-                     src=np.float32([(0.43,0.59),(0.58,0.59),(0,1),(1,1)]),
-                     dst=np.float32([(0,0), (1, 0), (0,1), (1,1)])):
-        if inv == True:
-            dst = tempdst
-            dst = src
-            src = tempdst
-        img_size = np.float32([(img.shape[1],img.shape[0])])
-        src = src* img_size
-        dst = dst * np.float32(dst_size)
-        M = cv2.getPerspectiveTransform(src, dst)
-        warped = cv2.warpPerspective(img, M, dst_size)
-        return warped
-
-
-
-    def calculateChessboard(self):
-        obj_pts = np.zeros((6*9,3), np.float32)
-        obj_pts[:,:2] = np.mgrid[0:9, 0:6].T.reshape(-1,2)
-        objpoints = []
-        imgpoints = []
-        images = glob.glob('../resources/chessboard/*.jpg')
-        print(images)
-        for indx, fname in enumerate(images):
-            img = cv2.imread(fname)
-            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-
-            ret, corners = cv2.findChessboardCorners(gray, (9,6), None)
-
-            if ret == True:
-                objpoints.append(obj_pts)
-                imgpoints.append(corners)
-        img_size = (img.shape[1], img.shape[0])
-        ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, img_size, None,None)
-        dst = cv2.undistort(img, mtx, dist, None, mtx)
-        dist_pickle = {}
-        dist_pickle['mtx'] = mtx
-        dist_pickle['dist'] = dist
-        self.dump = dist_pickle
-
-    def flattenImage(self,image):
-        dir = "../resources/chessboard/final.p"
-        mtx = self.dump['mtx']
-        dist = self.dump['dist']
-        dst = cv2.undistort(image, mtx, dist, None, mtx)
-        return dst
+        if lines is None:
+            return
+        img = np.copy(img)
+        line_img = np.zeros(
+            (
+                img.shape[0],
+                img.shape[1],
+                3
+            ),
+            dtype=np.uint8,
+        )
+        for line in lines:
+            for x1, y1, x2, y2 in line:
+                cv2.line(line_img, (x1, y1), (x2, y2), color, thickness)
+        img = cv2.addWeighted(img, 0.8, line_img, 1.0, 0.0)
+        return img
