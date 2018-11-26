@@ -11,26 +11,24 @@ class LaneDetector:
 
     def processLanes(self, img):
         region_of_interest_vertices = [
-            (-200, 720),
-            (1280/2, 720/2),
-            (1280+200, 720),
+            (0, 720),
+            (1280/2, 720*(21/30)),
+            (1280, 720),
         ]
         sizedImage = cv2.resize(img,(1280,720))
         greyScaledImage = cv2.cvtColor(sizedImage,cv2.COLOR_BGR2GRAY)
         gaussianBlur = cv2.GaussianBlur(greyScaledImage,(5,5),0)
         cannyedImage = self.cannyImage(gaussianBlur,25,100)
         croppedImage = self.cropImage(cannyedImage,np.array([region_of_interest_vertices],np.int32),)
-
         lines = cv2.HoughLinesP(
             croppedImage,
-            rho=6,
-            theta=np.pi / 60,
-            threshold=160,
-            lines=np.array([]),
-            minLineLength=40,
-            maxLineGap=25
+            rho = 6,
+            theta = np.pi / 60,
+            threshold = 160,
+            lines = np.array([]),
+            minLineLength = 40,
+            maxLineGap = 25
         )
-
         output = self.draw_lines(sizedImage,lines)
         return output
 
@@ -45,9 +43,7 @@ class LaneDetector:
         masked_image = cv2.bitwise_and(img, mask)
         return masked_image
 
-
     def draw_lines(self,img, lines, color=[255, 0, 0], thickness=3):
-
         if lines is None:
             return
         img = np.copy(img)

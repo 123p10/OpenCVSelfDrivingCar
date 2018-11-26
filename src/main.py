@@ -1,11 +1,11 @@
 import numpy as np
 import cv2
 from LaneDetector import LaneDetector
-
+from newLaneDetector import NewLaneDetector
 
 def main():
-    laneDetector = LaneDetector()
-    cap = cv2.VideoCapture('..\\resources\\stockcar\\cardriving_Trim.mp4')
+    laneDetector = NewLaneDetector()
+    cap = cv2.VideoCapture('..\\resources\\stockcar\\trimmed.mp4')
     #fgbg = cv2.createBackgroundSubtractorMOG2()
     while(1):
         ret, frame = cap.read()
