@@ -3,15 +3,18 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 class NewLaneDetector:
+    dimensions = []
+    def __init__(self,dim):
+        self.dimensions = dim
     def processLanes(self,frame):
         hsled_img = self.filter_img_hsl(frame);
         greyscale = cv2.cvtColor(hsled_img,cv2.COLOR_BGR2GRAY)
         blur = cv2.GaussianBlur(greyscale, (5, 5), 0)
         cannyedImage = self.cannyImage(blur)
         croppedImage = self.region_of_interest(cannyedImage)
-        kernel = np.ones((6,6),np.uint8)
-        erosion = cv2.dilate(croppedImage,kernel,iterations=1)
-        lines = self.hough_lines(erosion)
+        kernel = np.ones((7,7),np.uint8)
+        dilated = cv2.dilate(croppedImage,kernel,iterations = 1)
+        lines = self.hough_lines(dilated)
         lLane,rLane = self.separate_lines(lines,frame)
         colored = self.color_lanes(frame,lLane,rLane)
         return colored
@@ -60,9 +63,9 @@ class NewLaneDetector:
 
         return left_lane_lines, right_lane_lines
     def hough_lines(self,img):
-        rho = 1
-        theta = (np.pi/180) * 1
-        threshold = 25
+        rho = 0.5
+        theta = (np.pi/180) * 0.5
+        threshold = 15
         min_line_len = 15
         max_line_gap = 10
         return cv2.HoughLinesP(img, rho, theta, threshold, np.array([]), minLineLength=min_line_len, maxLineGap=max_line_gap)
@@ -86,7 +89,7 @@ class NewLaneDetector:
         else:
             ignore_mask_color = 255
 
-        vert = np.array([[(-img.shape[1]/4,img.shape[0]) , (img.shape[1]/4,img.shape[0]*(0.70)), (img.shape[1]*3/4,img.shape[0]*0.70), (img.shape[1]*5/4,img.shape[0])]], dtype=np.int32)
+        vert = np.array([[(img.shape[1]*self.dimensions[0],img.shape[0]*self.dimensions[1]) , (img.shape[1]*self.dimensions[2],img.shape[0]*self.dimensions[3]), (img.shape[1]*self.dimensions[4],img.shape[0]*self.dimensions[5]), (img.shape[1]*self.dimensions[6],img.shape[0]*self.dimensions[7])]], dtype=np.int32)
 
         #filling pixels inside the polygon defined by "vertices" with the fill color
         cv2.fillPoly(mask, vert, ignore_mask_color)
@@ -94,6 +97,7 @@ class NewLaneDetector:
         #returning the image only where mask pixels are nonzero
         masked_image = cv2.bitwise_and(img, mask)
         return masked_image
+    #Unused
     def transformLane(self,frame):
         perspectiveTransform = cv2.getPerspectiveTransform(np.float32([[0,650],[0,720],[1280,720],[1280,650]]),np.float32([[0,0],[0,720],[1280,720],[1280,0]]))
         out = cv2.warpPerspective(frame,perspectiveTransform,(1280,720))
