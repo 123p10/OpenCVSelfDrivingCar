@@ -5,11 +5,12 @@ from newLaneDetector import NewLaneDetector
 
 #Configs
 
-videoConfig = "HardTrimmed"
-output = "..\\resources\\output_videos\\first.avi"
+videoConfig = "BrownCar"
+output = "..\\resources\\output_videos\\BrownCar.avi"
+
 def main():
-    input,dimensions = config(videoConfig)
-    laneDetector = NewLaneDetector(dimensions)
+    input,dimensions,white_filter,yellow_filter = config(videoConfig)
+    laneDetector = NewLaneDetector(dimensions,yellow_filter=yellow_filter,white_filter=white_filter)
     if output != "":
         video = cv2.VideoWriter(output,cv2.VideoWriter_fourcc(*'DIVX'),30,(1280,720))
 
@@ -37,8 +38,15 @@ def main():
 def config(name):
     if name == "HardTrimmed":
         input = '..\\resources\\stockcar\\hard.mp4'
-        dimensions = [5/100,1,47/100,70/100,53/100,70/100,95/100,1]
-    return input,dimensions
+        dimensions = [5/100,1,47/100,75/100,53/100,75/100,95/100,1]
+        yellow_filter = [15, 38, 115]
+        white_filter = [0, 180, 0]
+    if name == "BrownCar":
+        input = '..\\resources\\stockcar\\browncar.mp4'
+        dimensions = [10/100,11/12,47/100,63/100,53/100,63/100,90/100,11/12]
+        yellow_filter = [15, 38, 115]
+        white_filter = [0, 200, 0]
+    return input,dimensions,white_filter,yellow_filter
 
 if __name__ == "__main__":
     main()

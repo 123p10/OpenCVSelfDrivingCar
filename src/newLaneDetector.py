@@ -4,12 +4,17 @@ from matplotlib import pyplot as plt
 
 class NewLaneDetector:
     dimensions = []
-    def __init__(self,dim):
+    yellow_filter = []
+    white_filter = []
+    def __init__(self,dim,yellow_filter,white_filter):
+        self.yellow_filter = yellow_filter
+        self.white_filter = white_filter
         self.dimensions = dim
     def processLanes(self,frame):
         hsled_img = self.filter_img_hsl(frame);
         greyscale = cv2.cvtColor(hsled_img,cv2.COLOR_BGR2GRAY)
-        blur = cv2.GaussianBlur(greyscale, (5, 5), 0)
+        #blur = cv2.GaussianBlur(greyscale, (5, 5), 0)
+        blur = cv2.medianBlur(greyscale,5)
         cannyedImage = self.cannyImage(blur)
         croppedImage = self.region_of_interest(cannyedImage)
         kernel = np.ones((7,7),np.uint8)
@@ -47,7 +52,6 @@ class NewLaneDetector:
                     continue
 
                 slope = dy / dx
-
                 # This is pure guess than anything...
                 # but get rid of lines with a small slope as they are likely to be horizontal one
                 epsilon = 0.1
@@ -63,8 +67,8 @@ class NewLaneDetector:
 
         return left_lane_lines, right_lane_lines
     def hough_lines(self,img):
-        rho = 0.5
-        theta = (np.pi/180) * 0.5
+        rho = 1
+        theta = (np.pi/180) * 1
         threshold = 15
         min_line_len = 15
         max_line_gap = 10
@@ -103,7 +107,7 @@ class NewLaneDetector:
         out = cv2.warpPerspective(frame,perspectiveTransform,(1280,720))
         return out
     def cannyImage(self,frame):
-        return cv2.Canny(frame,50,100)
+        return cv2.Canny(frame,75,100)
 
 
     def combine_hsl_isolated_with_original(self,img, hsl_yellow, hsl_white):
@@ -118,7 +122,7 @@ class NewLaneDetector:
     def isolate_yellow_hsl(self,img):
         # Caution - OpenCV encodes the data in ****HLS*** format
         # Lower value equivalent pure HSL is (30, 45, 15)
-        low_threshold = np.array([15, 38, 115], dtype=np.uint8)
+        low_threshold = np.array(self.yellow_filter, dtype=np.uint8)
         # Higher value equivalent pure HSL is (75, 100, 80)
         high_threshold = np.array([35, 204, 255], dtype=np.uint8)
 
@@ -131,7 +135,7 @@ class NewLaneDetector:
     def isolate_white_hsl(self,img):
         # Caution - OpenCV encodes the data in ***HLS*** format
         # Lower value equivalent pure HSL is (30, 45, 15)
-        low_threshold = np.array([0, 180, 0], dtype=np.uint8)
+        low_threshold = np.array(self.white_filter, dtype=np.uint8)
         # Higher value equivalent pure HSL is (360, 100, 100)
         high_threshold = np.array([180, 255, 255], dtype=np.uint8)
 
