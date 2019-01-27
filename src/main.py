@@ -2,15 +2,17 @@ import numpy as np
 import cv2
 from LaneDetector import LaneDetector
 from newLaneDetector import NewLaneDetector
+from carDetector import CarDetector
 
 #Configs
-
 videoConfig = "BrownCar"
 output = "..\\resources\\output_videos\\BrownCar.avi"
-
+classifierPath = "..\\resources\\xml_files\\cars.xml"
 def main():
     input,dimensions,white_filter,yellow_filter = config(videoConfig)
     laneDetector = NewLaneDetector(dimensions,yellow_filter=yellow_filter,white_filter=white_filter)
+    carDetector = CarDetector(classifierPath)
+
     if output != "":
         video = cv2.VideoWriter(output,cv2.VideoWriter_fourcc(*'DIVX'),30,(1280,720))
 
@@ -20,9 +22,11 @@ def main():
         if ret == False:
             break
         frame = laneDetector.processLanes(frame)
+        #remember to uncomment this
+        frame = carDetector.detectCars(frame)
+
         if output != "":
             video.write(frame)
-
         #frames.append(frame)
         cv2.imshow('frame',frame)
         k = cv2.waitKey(30) & 0xff

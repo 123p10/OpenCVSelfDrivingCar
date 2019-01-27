@@ -24,21 +24,15 @@ class NewLaneDetector:
         colored = self.color_lanes(frame,lLane,rLane)
         return colored
 
-
-
     def color_lanes(self,img, left_lane_lines, right_lane_lines, left_lane_color=[255, 0, 0], right_lane_color=[0, 0, 255]):
         left_colored_img = self.draw_lines(img, left_lane_lines, color=left_lane_color, make_copy=True)
         right_colored_img = self.draw_lines(left_colored_img, right_lane_lines, color=right_lane_color, make_copy=False)
-
         return right_colored_img
     def separate_lines(self,lines, img):
         img_shape = img.shape
-
         middle_x = img_shape[1] / 2
-
         left_lane_lines = []
         right_lane_lines = []
-
         for line in lines:
             for x1, y1, x2, y2 in line:
                 dx = x2 - x1
