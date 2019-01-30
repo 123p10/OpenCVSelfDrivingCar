@@ -3,6 +3,7 @@ import cv2
 from LaneDetector import LaneDetector
 from newLaneDetector import NewLaneDetector
 from carDetector import CarDetector
+from laneDetector3 import LaneDetector3
 
 #Configs
 videoConfig = "BrownCar"
@@ -10,7 +11,7 @@ output = "..\\resources\\output_videos\\BrownCar.avi"
 classifierPath = "..\\resources\\xml_files\\cars.xml"
 def main():
     input,dimensions,white_filter,yellow_filter = config(videoConfig)
-    laneDetector = NewLaneDetector(dimensions,yellow_filter=yellow_filter,white_filter=white_filter)
+    laneDetector = LaneDetector3(dimensions,yellow_filter=yellow_filter,white_filter=white_filter)
     carDetector = CarDetector(classifierPath)
 
     if output != "":
@@ -23,7 +24,7 @@ def main():
             break
         frame = laneDetector.processLanes(frame)
         #remember to uncomment this
-        frame = carDetector.detectCars(frame)
+        #frame = carDetector.detectCars(frame)
 
         if output != "":
             video.write(frame)
@@ -47,7 +48,7 @@ def config(name):
         white_filter = [0, 180, 0]
     if name == "BrownCar":
         input = '..\\resources\\stockcar\\browncar.mp4'
-        dimensions = [10/100,11/12,47/100,63/100,53/100,63/100,90/100,11/12]
+        dimensions = [10/100,11/12,49/100,55/100,52/100,55/100,90/100,11/12]
         yellow_filter = [15, 38, 115]
         white_filter = [0, 200, 0]
     return input,dimensions,white_filter,yellow_filter
