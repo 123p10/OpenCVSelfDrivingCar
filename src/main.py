@@ -3,6 +3,7 @@ import cv2
 from LaneDetector import LaneDetector
 from newLaneDetector import NewLaneDetector
 from carDetector import CarDetector
+from yoloCarDetector import YoloCarDetector
 
 #Configs
 videoConfig = "BrownCar"
@@ -11,8 +12,8 @@ classifierPath = "..\\resources\\xml_files\\cars.xml"
 def main():
     input,dimensions,white_filter,yellow_filter = config(videoConfig)
     laneDetector = NewLaneDetector(dimensions,yellow_filter=yellow_filter,white_filter=white_filter)
-    carDetector = CarDetector(classifierPath)
-
+    #carDetector = CarDetector(classifierPath)
+    yoloCarDetector = YoloCarDetector("..\\resources\\car_detector\\yolo3.cfg","..\\resources\\car_detector\\yolov3.weights","..\\resources\\car_detector\\yolo.txt")
     if output != "":
         video = cv2.VideoWriter(output,cv2.VideoWriter_fourcc(*'DIVX'),30,(1280,720))
 
@@ -23,8 +24,8 @@ def main():
             break
         frame = laneDetector.processLanes(frame)
         #remember to uncomment this
-        frame = carDetector.detectCars(frame)
-
+        #frame = carDetector.detectCars(frame)
+        frame = yoloCarDetector.detectCars(frame)
         if output != "":
             video.write(frame)
         #frames.append(frame)
