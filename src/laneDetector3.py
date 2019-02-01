@@ -23,6 +23,8 @@ class LaneDetector3:
         croppedImage = self.region_of_interest(cannyedImage)
         kernel = np.ones((3,3),np.uint8)
         dilated = cv2.dilate(croppedImage,kernel,iterations = 1)
+        #return dilated
+
         lines = self.hough_lines(dilated)
         lLane,rLane = self.separate_lines(lines,frame)
         rightfit = self.getPoly(rLane,'R')
@@ -115,10 +117,9 @@ class LaneDetector3:
             y.append(line[0][3])
         fit = np.polyfit(x,y,2)
         #print(fit[0])
-        if abs(fit[0]) >= 0.0005:
+        if abs(fit[0]) <= 0.0005 or abs(fit[0]) >= 0.005:
             #print("\n\n\\naaaa")
-            fit = np.polyfit(x,y,1)
-
+            fit= np.polyfit(x,y,1)
 
         return fit;
     def color_lanes(self,img, left_lane_lines, right_lane_lines, left_lane_color=[255, 0, 0], right_lane_color=[0, 0, 255]):

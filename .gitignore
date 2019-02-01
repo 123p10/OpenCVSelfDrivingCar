@@ -1,2 +1,4 @@
 
 resources/car_detector/yolov3.weights
+resources/stockcar/driving_toronto_highway.mp4
+resources/stockcar/driving_toronto_highway1.mp4

@@ -6,8 +6,8 @@ from carDetector import CarDetector
 from yoloCarDetector import YoloCarDetector
 from laneDetector3 import LaneDetector3
 #Configs
-videoConfig = "BrownCar"
-output = "..\\resources\\output_videos\\BrownCar.avi"
+videoConfig = "TorontoHighway"
+output = "..\\resources\\output_videos\\toronto.avi"
 classifierPath = "..\\resources\\xml_files\\cars.xml"
 def main():
     input,dimensions,white_filter,yellow_filter = config(videoConfig)
@@ -24,7 +24,7 @@ def main():
         frame = laneDetector.processLanes(frame)
         #remember to uncomment this
         #frame = carDetector.detectCars(frame)
-        frame = yoloCarDetector.detectCars(frame)
+        #frame = yoloCarDetector.detectCars(frame)
         if output != "":
             video.write(frame)
         #frames.append(frame)
@@ -50,6 +50,12 @@ def config(name):
         dimensions = [10/100,11/12,49/100,55/100,52/100,55/100,90/100,11/12]
         yellow_filter = [15, 38, 115]
         white_filter = [0, 200, 0]
+    if name == "TorontoHighway":
+        input = '..\\resources\\stockcar\\driving_toronto_highway1.mp4'
+        dimensions = [2/100,10/12,49/100,60/100,52/100,60/100,98/100,10/12]
+        yellow_filter = [60, 60, 150]
+        white_filter = [0, 125, 0]
+
     return input,dimensions,white_filter,yellow_filter
 
 if __name__ == "__main__":
