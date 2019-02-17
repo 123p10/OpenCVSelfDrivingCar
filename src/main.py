@@ -22,17 +22,16 @@ def main():
         if ret == False:
             break
         frame = laneDetector.processLanes(frame)
-        #remember to uncomment this
-        #frame = carDetector.detectCars(frame)
+        #remember to uncomment this to detect cars
         #frame = yoloCarDetector.detectCars(frame)
         if output != "":
             video.write(frame)
+        #uncomment this to record this as a video
         #frames.append(frame)
         cv2.imshow('frame',frame)
         k = cv2.waitKey(30) & 0xff
         if k == 27:
             break
-    #saveToVideo(frames,"..\\resources\\output_videos\\first.avi")
     if output != "":
         video.release()
     cap.release()

@@ -99,7 +99,6 @@ class LaneDetector3:
             return 0
 
         for line in lines:
-            #print(line[0][0])
             if side == 'L':
                 if self.L[0] > line[0][0]:
                     self.L[0] = line[0][0]
@@ -116,9 +115,7 @@ class LaneDetector3:
             x.append(line[0][2])
             y.append(line[0][3])
         fit = np.polyfit(x,y,2)
-        #print(fit[0])
         if abs(fit[0]) <= 0.0005 or abs(fit[0]) >= 0.005:
-            #print("\n\n\\naaaa")
             fit= np.polyfit(x,y,1)
 
         return fit;
@@ -135,26 +132,19 @@ class LaneDetector3:
             for x1, y1, x2, y2 in line:
                 dx = x2 - x1
                 if dx == 0:
-                    #Discarding line since we can't gradient is undefined at this dx
                     continue
                 dy = y2 - y1
-
-                # Similarly, if the y value remains constant as x increases, discard line
                 if dy == 0:
                     continue
 
                 slope = dy / dx
-                # This is pure guess than anything...
-                # but get rid of lines with a small slope as they are likely to be horizontal one
                 epsilon = 0.1
                 if abs(slope) <= epsilon:
                     continue
 
                 if slope < 0 and x1 < middle_x and x2 < middle_x:
-                    # Lane should also be within the left hand side of region of interest
                     left_lane_lines.append([[x1, y1, x2, y2]])
                 elif x1 >= middle_x and x2 >= middle_x:
-                    # Lane should also be within the right hand side of region of interest
                     right_lane_lines.append([[x1, y1, x2, y2]])
 
         return left_lane_lines, right_lane_lines
@@ -166,7 +156,6 @@ class LaneDetector3:
         max_line_gap = 10
         return cv2.HoughLinesP(img, rho, theta, threshold, np.array([]), minLineLength=min_line_len, maxLineGap=max_line_gap)
     def draw_lines(self,img, lines, color=[255, 0, 0], thickness=10, make_copy=True):
-        # Copy the passed image
         img_copy = np.copy(img) if make_copy else img
 
         for line in lines:
@@ -175,22 +164,15 @@ class LaneDetector3:
 
         return img_copy
     def region_of_interest(self,img):
-        #defining a blank mask to start with
         mask = np.zeros_like(img)
-
-        #defining a 3 channel or 1 channel color to fill the mask with depending on the input image
         if len(img.shape) > 2:
-            channel_count = img.shape[2]  # i.e. 3 or 4 depending on your image
+            channel_count = img.shape[2]
             ignore_mask_color = (255,) * channel_count
         else:
             ignore_mask_color = 255
 
         vert = np.array([[(img.shape[1]*self.dimensions[0],img.shape[0]*self.dimensions[1]) , (img.shape[1]*self.dimensions[2],img.shape[0]*self.dimensions[3]), (img.shape[1]*self.dimensions[4],img.shape[0]*self.dimensions[5]), (img.shape[1]*self.dimensions[6],img.shape[0]*self.dimensions[7])]], dtype=np.int32)
-
-        #filling pixels inside the polygon defined by "vertices" with the fill color
         cv2.fillPoly(mask, vert, ignore_mask_color)
-
-        #returning the image only where mask pixels are nonzero
         masked_image = cv2.bitwise_and(img, mask)
         return masked_image
     #Unused
@@ -212,25 +194,14 @@ class LaneDetector3:
         hsl_white = self.isolate_white_hsl(hsl_img)
         return self.combine_hsl_isolated_with_original(img, hsl_yellow, hsl_white)
     def isolate_yellow_hsl(self,img):
-        # Caution - OpenCV encodes the data in ****HLS*** format
-        # Lower value equivalent pure HSL is (30, 45, 15)
         low_threshold = np.array(self.yellow_filter, dtype=np.uint8)
-        # Higher value equivalent pure HSL is (75, 100, 80)
         high_threshold = np.array([35, 204, 255], dtype=np.uint8)
-
         yellow_mask = cv2.inRange(img, low_threshold, high_threshold)
-
         return yellow_mask
 
-
-    # Image should have already been converted to HSL color space
     def isolate_white_hsl(self,img):
-        # Caution - OpenCV encodes the data in ***HLS*** format
-        # Lower value equivalent pure HSL is (30, 45, 15)
         low_threshold = np.array(self.white_filter, dtype=np.uint8)
-        # Higher value equivalent pure HSL is (360, 100, 100)
         high_threshold = np.array([180, 255, 255], dtype=np.uint8)
-
         yellow_mask = cv2.inRange(img, low_threshold, high_threshold)
 
         return yellow_mask
